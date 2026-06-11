@@ -1,0 +1,282 @@
+
+<style>
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.wrap{padding:1rem 0;font-family:var(--font-sans)}
+.mpills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
+.mpill{font-size:12px;padding:4px 12px;border-radius:999px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.mpill.active{font-weight:500;border-color:transparent}
+.summary-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:1rem}
+.sc{background:var(--color-background-secondary);border-radius:8px;padding:8px 10px}
+.sc-name{font-size:10px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-val{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.sc-delta{font-size:10px;margin-top:1px}
+.du{color:#1D9E75}.dd{color:#E24B4A}.dn{color:#888780}
+.today-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-bottom:1rem}
+.tc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:8px;padding:8px 10px}
+.tc-name{font-size:10px;margin-bottom:3px}
+.tc-val{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.tc-vs{font-size:10px;margin-top:1px}
+.chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.chart-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.chart-title{font-size:12px;font-weight:500;color:var(--color-text-secondary)}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.li{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);cursor:pointer;padding:2px 6px;border-radius:999px;border:0.5px solid transparent;transition:opacity .15s}
+.li:hover{border-color:var(--color-border-tertiary)}
+.li.off{opacity:0.3}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.opts{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--color-text-secondary)}
+.section-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;margin-top:2px}
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Unified partner funnel line chart dashboard with 7-day rolling average overlay and today vs average comparison.</h2>
+
+<div class="mpills" id="mpills"></div>
+
+<div class="section-label">Period totals / averages</div>
+<div class="summary-row" id="summary-row"></div>
+
+<div class="section-label">Today vs 7-day avg</div>
+<div class="today-strip" id="today-strip"></div>
+
+<div class="chart-card">
+  <div class="chart-top">
+    <span class="chart-title" id="chart-title">All partners — daily</span>
+    <div class="opts">
+      <label><input type="checkbox" id="ma-on" checked onchange="render()"> 7-day avg</label>
+    </div>
+  </div>
+  <div class="leg" id="legend"></div>
+  <div style="position:relative;width:100%;height:300px">
+    <canvas id="mainChart" role="img" aria-label="Daily funnel metric line chart for all partners with 7-day rolling average">Partner daily funnel trend lines.</canvas>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+  <button onclick="sendPrompt('Which partners are consistently above their 7-day average on approved in the last week?')">Above avg on approved ↗</button>
+  <button onclick="sendPrompt('Which partner shows the widest day-to-day variance on click-to-approved rate?')">Highest variance ↗</button>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const PARTNERS=[
+  {name:'Meta',      color:'#378ADD',dash:[]},
+  {name:'Google',    color:'#1D9E75',dash:[6,3]},
+  {name:'TikTok',    color:'#D4537E',dash:[2,2]},
+  {name:'GoPay',     color:'#BA7517',dash:[7,3]},
+  {name:'InMobi',    color:'#7F77DD',dash:[4,2,1,2]},
+  {name:'Tokopedia', color:'#3B6D11',dash:[9,3]},
+];
+
+const METRICS=[
+  {key:'installs', label:'Installs',         isRate:false,pillBg:'#E6F1FB',pillC:'#0C447C',pillBd:'#85B7EB'},
+  {key:'clicks',   label:'Clicks',           isRate:false,pillBg:'#EAF3DE',pillC:'#27500A',pillBd:'#97C459'},
+  {key:'applied',  label:'Applied',          isRate:false,pillBg:'#FAEEDA',pillC:'#633806',pillBd:'#EF9F27'},
+  {key:'approved', label:'Approved',         isRate:false,pillBg:'#FAECE7',pillC:'#712B13',pillBd:'#F0997B'},
+  {key:'c2a',      label:'Click → approved', isRate:true, pillBg:'#EEEDFE',pillC:'#3C3489',pillBd:'#AFA9EC'},
+];
+
+const DAYS=30;
+const labels=[];
+const baseDate=new Date(2025,4,12);
+for(let i=0;i<DAYS;i++){
+  const d=new Date(baseDate);d.setDate(baseDate.getDate()+i);
+  labels.push(d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}));
+}
+
+function seeded(seed){let s=seed;return()=>{s=Math.sin(s)*10000;return s-(s|0)};}
+function genPartner(idx){
+  const rng=seeded(idx*137+7);
+  const bI=[1400,1050,920,620,490,330][idx];
+  const wk=[1.25,1.15,1.3,1.1,1.2,1.05][idx];
+  const tr=[0.08,0.05,-0.04,0.12,0.03,-0.02][idx];
+  const cr=[0.45,0.50,0.34,0.54,0.39,0.41][idx];
+  const ar=[0.265,0.24,0.225,0.29,0.205,0.245][idx];
+  const apr=[0.52,0.55,0.41,0.52,0.42,0.54][idx];
+  const days=[];
+  for(let d=0;d<DAYS;d++){
+    const dow=(baseDate.getDay()+d)%7;
+    const w=(dow===0||dow===6)?wk:1;
+    const trend=1+(d/DAYS)*tr;
+    const noise=0.82+rng()*0.38;
+    const inst=Math.round(bI*w*trend*noise);
+    const clicks=Math.round(inst*(cr+(rng()-0.5)*0.06));
+    const applied=Math.round(clicks*(ar+(rng()-0.5)*0.04));
+    const approved=Math.round(applied*(apr+(rng()-0.5)*0.06));
+    const c2a=clicks>0?parseFloat((approved/clicks*100).toFixed(2)):0;
+    days.push({installs:inst,clicks,applied,approved,c2a});
+  }
+  return days;
+}
+const DATA=PARTNERS.map((_,i)=>genPartner(i));
+const visible=PARTNERS.map(()=>true);
+
+function rollingAvg(arr,w=7){
+  return arr.map((v,i)=>{
+    if(i<w-1)return null;
+    const sl=arr.slice(i-w+1,i+1);
+    return parseFloat((sl.reduce((a,b)=>a+b,0)/w).toFixed(2));
+  });
+}
+
+function fmt(v,isRate){
+  if(isRate)return v.toFixed(1)+'%';
+  return v>=1000?(v/1000).toFixed(1)+'K':String(Math.round(v));
+}
+
+function periodDelta(series){
+  const h=Math.floor(series.length/2);
+  const f=series.slice(0,h).reduce((a,b)=>a+b,0)/h;
+  const s=series.slice(h).reduce((a,b)=>a+b,0)/(series.length-h);
+  if(!f)return 0;
+  return ((s-f)/f*100);
+}
+
+let activeMi=0;
+let chart=null;
+
+function buildPills(){
+  document.getElementById('mpills').innerHTML=METRICS.map((m,i)=>{
+    const a=i===activeMi;
+    return `<button class="mpill${a?' active':''}" style="${a?`background:${m.pillBg};color:${m.pillC};border-color:${m.pillBd}`:''}" onclick="setMetric(${i})">${m.label}</button>`;
+  }).join('');
+}
+
+function buildSummary(){
+  const m=METRICS[activeMi];
+  document.getElementById('summary-row').innerHTML=PARTNERS.map((p,i)=>{
+    const s=DATA[i].map(d=>d[m.key]);
+    const total=s.reduce((a,b)=>a+b,0);
+    const avg=total/s.length;
+    const delta=periodDelta(s);
+    const disp=m.isRate?avg.toFixed(1)+'%':fmt(total,false);
+    const dc=delta>1.5?'du':delta<-1.5?'dd':'dn';
+    return `<div class="sc">
+      <div class="sc-name" style="color:${p.color}">${p.name}</div>
+      <div class="sc-val">${disp}</div>
+      <div class="sc-delta ${dc}">${delta>0?'+':''}${delta.toFixed(1)}% trend</div>
+    </div>`;
+  }).join('');
+}
+
+function buildTodayStrip(){
+  const m=METRICS[activeMi];
+  const todayIdx=DAYS-1;
+  document.getElementById('today-strip').innerHTML=PARTNERS.map((p,i)=>{
+    const s=DATA[i].map(d=>d[m.key]);
+    const today=s[todayIdx];
+    const ma=rollingAvg(s)[todayIdx];
+    const diff=ma?((today-ma)/ma*100):0;
+    const dc=diff>2?'du':diff<-2?'dd':'dn';
+    const arrow=diff>2?'↑':diff<-2?'↓':'→';
+    return `<div class="tc">
+      <div class="tc-name" style="color:${p.color};font-size:10px">${p.name}</div>
+      <div class="tc-val">${fmt(today,m.isRate)}</div>
+      <div class="tc-vs ${dc}">${arrow} ${Math.abs(diff).toFixed(1)}% vs 7d avg</div>
+    </div>`;
+  }).join('');
+}
+
+function buildLegend(){
+  const showMA=document.getElementById('ma-on').checked;
+  document.getElementById('legend').innerHTML=
+    PARTNERS.map((p,i)=>
+      `<span class="li${visible[i]?'':' off'}" onclick="toggleP(${i})">
+        <span class="ld" style="background:${p.color}"></span>${p.name}
+      </span>`
+    ).join('')+
+    (showMA?`<span class="li" style="margin-left:4px;cursor:default">
+      <span style="width:16px;height:0;border-top:2px dashed #888780;display:inline-block;vertical-align:middle;margin-right:4px"></span>7d avg
+    </span>`:'');
+}
+
+function buildChart(){
+  const m=METRICS[activeMi];
+  const showMA=document.getElementById('ma-on').checked;
+  document.getElementById('chart-title').textContent=`All partners — ${m.label}`;
+  if(chart){chart.destroy();chart=null;}
+
+  const datasets=[];
+  PARTNERS.forEach((p,i)=>{
+    if(!visible[i])return;
+    const s=DATA[i].map(d=>d[m.key]);
+    datasets.push({
+      label:p.name,
+      data:s,
+      borderColor:p.color+'99',
+      backgroundColor:'transparent',
+      borderWidth:1.5,
+      borderDash:[],
+      pointRadius:0,
+      pointHoverRadius:5,
+      tension:0.3,
+      order:2,
+    });
+    if(showMA){
+      datasets.push({
+        label:p.name+' 7d',
+        data:rollingAvg(s),
+        borderColor:p.color,
+        backgroundColor:'transparent',
+        borderWidth:2.5,
+        borderDash:[5,3],
+        pointRadius:0,
+        pointHoverRadius:0,
+        tension:0.4,
+        spanGaps:true,
+        order:1,
+      });
+    }
+  });
+
+  const ctx=document.getElementById('mainChart').getContext('2d');
+  chart=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:ctx=>{
+              const v=ctx.parsed.y;
+              if(v===null||v===undefined)return null;
+              return ` ${ctx.dataset.label}: ${m.isRate?v.toFixed(1)+'%':fmt(v,false)}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{
+          grid:{color:'rgba(128,128,128,0.06)'},
+          ticks:{font:{size:10},color:'#888780',maxTicksLimit:10,maxRotation:0}
+        },
+        y:{
+          grid:{color:'rgba(128,128,128,0.07)'},
+          beginAtZero:false,
+          ticks:{
+            font:{size:10},color:'#888780',maxTicksLimit:5,
+            callback:v=>m.isRate?v.toFixed(0)+'%':(v>=1000?(v/1000).toFixed(0)+'K':Math.round(v))
+          }
+        }
+      }
+    }
+  });
+}
+
+function render(){
+  buildPills();
+  buildSummary();
+  buildTodayStrip();
+  buildLegend();
+  buildChart();
+}
+
+function setMetric(i){activeMi=i;render();}
+function toggleP(i){visible[i]=!visible[i];buildLegend();buildChart();}
+render();
+</script>
