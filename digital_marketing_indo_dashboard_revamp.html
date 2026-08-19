@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MKT Digital Marketing — Dashboard Revamp Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16232E; --sub:#5B6B78; --faint:#8A97A2;
+    --paper:#F4F6F8; --card:#FFFFFF; --line:#E2E7EC; --line-strong:#C9D2DA;
+    --accent:#1466C8; --accent-bg:#EAF2FC;
+    --good:#0F6E56; --good-bg:#E1F5EE;
+    --bad:#A32D2D; --bad-bg:#FCEBEB;
+    --warn:#854F0B; --warn-bg:#FAEEDA;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'IBM Plex Sans',sans-serif; background:var(--paper); color:var(--ink); font-size:14px; line-height:1.5;}
+  .num{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1240px; margin:0 auto; padding:0 24px 72px;}
+  a{color:var(--accent);}
+
+  header.top{position:sticky; top:0; z-index:20; background:var(--card); border-bottom:1px solid var(--line);}
+  .top-inner{max-width:1240px; margin:0 auto; padding:12px 24px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .dot{width:10px; height:10px; border-radius:50%; background:var(--accent);}
+  .brand h1{font-size:16px; font-weight:600; letter-spacing:-0.01em;}
+  .brand .tag{font-size:11px; color:var(--faint); border:1px solid var(--line); border-radius:999px; padding:1px 9px;}
+  .fresh{margin-left:auto; font-size:12px; color:var(--faint);}
+  .layer-nav{max-width:1240px; margin:0 auto; padding:0 24px; display:flex; gap:2px;}
+  .layer-nav button{border:0; background:transparent; font-family:inherit; font-size:13px; color:var(--sub); padding:9px 14px; cursor:pointer; border-bottom:2px solid transparent;}
+  .layer-nav button.on{color:var(--ink); font-weight:600; border-bottom-color:var(--accent);}
+  .layer-nav button:hover{color:var(--ink);}
+  .layer-nav .lnum{font-size:11px; color:var(--faint); margin-right:6px;}
+
+  .page{display:none;} .page.on{display:block;}
+  section{margin-top:26px;}
+  .sec-label{font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--faint); font-weight:600; margin-bottom:3px;}
+  .sec-title{font-size:18px; font-weight:600; letter-spacing:-0.01em; margin-bottom:12px;}
+  .sec-title small{font-size:13px; font-weight:400; color:var(--sub); margin-left:8px;}
+  .ask{display:inline-block; font-size:11px; background:var(--accent-bg); color:var(--accent); border-radius:5px; padding:1px 7px; margin-left:6px; font-weight:500; vertical-align:2px;}
+
+  .banner{display:flex; align-items:center; gap:10px; background:var(--warn-bg); border:1px solid #EDD9AE; border-radius:var(--radius); padding:10px 14px; margin-top:18px; flex-wrap:wrap;}
+  .banner .pill{background:var(--warn); color:#fff; font-size:11px; font-weight:600; padding:2px 8px; border-radius:999px;}
+  .banner span{font-size:13px; color:var(--warn);}
+  .banner .lnk{margin-left:auto; font-size:12px; color:var(--warn); font-weight:500; cursor:pointer; text-decoration:underline;}
+
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px;}
+  .tile{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px;}
+  .tile .lbl{font-size:12px; color:var(--sub);}
+  .tile .val{font-size:25px; font-weight:600; margin:2px 0 4px; letter-spacing:-0.02em;}
+  .tile .cmp{font-size:12px; display:flex; gap:8px; flex-wrap:wrap;}
+  .up{color:var(--good);} .down{color:var(--bad);} .flat{color:var(--warn);}
+  .tile .tgt{color:var(--faint);}
+  .spark svg{width:100%; height:28px; overflow:visible; margin-top:8px;}
+  .spark path{fill:none; stroke:var(--accent); stroke-width:1.5;}
+  .spark line{stroke:var(--line-strong); stroke-dasharray:3 3; stroke-width:1;}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px 18px;}
+  .card h3{font-size:14px; font-weight:600; margin-bottom:2px;}
+  .card .sub{font-size:12px; color:var(--sub); margin-bottom:12px;}
+  .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+  @media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+  .funnel{display:flex; align-items:stretch; overflow-x:auto;}
+  .stage{flex:1; min-width:118px; text-align:center; padding:12px 8px; border-radius:8px; background:var(--paper);}
+  .stage .s-lbl{font-size:12px; color:var(--sub);}
+  .stage .s-val{font-size:19px; font-weight:600; margin:2px 0;}
+  .stage .s-d{font-size:11px;}
+  .gate{display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:60px; color:var(--faint); font-size:11px;}
+  .gate .rate{font-weight:600; color:var(--ink); font-size:13px;}
+
+  .caveat{display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--sub); background:var(--card); border:1px dashed var(--line-strong); border-radius:8px; padding:8px 12px; margin-top:10px;}
+  .caveat b{color:var(--warn); font-weight:600;}
+
+  .toolbar{display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;}
+  .toggle{display:flex; border:1px solid var(--line-strong); border-radius:8px; overflow:hidden;}
+  .toggle button{border:0; background:var(--card); color:var(--sub); font-family:inherit; font-size:12px; padding:6px 13px; cursor:pointer;}
+  .toggle button.on{background:var(--ink); color:#fff;}
+  .hint{font-size:12px; color:var(--faint);}
+  select{font-family:inherit; font-size:12px; padding:6px 10px; border:1px solid var(--line-strong); border-radius:8px; background:var(--card); color:var(--ink);}
+
+  .tbl-wrap{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{background:var(--card); text-align:right; padding:9px 10px; font-size:12px; color:var(--sub); font-weight:500; border-bottom:1px solid var(--line-strong); white-space:nowrap;}
+  thead th:first-child{text-align:left; padding-left:16px;}
+  th.sortable{cursor:pointer; user-select:none;}
+  th .s-ind{color:var(--accent);}
+  tbody td{text-align:right; padding:8px 10px; border-bottom:1px solid var(--line); white-space:nowrap;}
+  tbody td:first-child{text-align:left; padding-left:16px; font-weight:500;}
+  tbody tr:last-child td{border-bottom:0;}
+  tbody tr:hover{background:#FAFBFC;}
+  tbody tr.total td{border-top:2px solid var(--line-strong); font-weight:600; background:var(--paper);}
+  tbody tr.grp td{background:var(--paper); font-weight:600; font-size:12px; color:var(--sub); text-transform:uppercase; letter-spacing:0.06em;}
+  .chip{display:inline-block; padding:1px 8px; border-radius:6px; font-size:12px; font-weight:500;}
+  .chip.g{background:var(--good-bg); color:var(--good);}
+  .chip.w{background:var(--warn-bg); color:var(--warn);}
+  .chip.b{background:var(--bad-bg); color:var(--bad);}
+  .chip.n{background:var(--paper); color:var(--sub);}
+  .dd{color:var(--accent); text-decoration:none; font-size:12px; cursor:pointer;}
+
+  .bar-row{display:grid; grid-template-columns:140px 1fr 66px; align-items:center; gap:10px; padding:4px 0; font-size:12px;}
+  .bar-row .name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bar-track{position:relative; height:14px;}
+  .bar-track .zero{position:absolute; top:0; bottom:0; width:1px; background:var(--line-strong);}
+  .bar-track .bar{position:absolute; top:2px; bottom:2px; border-radius:3px;}
+  .bar.pos{background:var(--good); left:50%;} .bar.neg{background:var(--bad); right:50%;}
+  .bar-row .v{text-align:right; font-weight:500;}
+
+  .stackbar{display:flex; height:26px; border-radius:6px; overflow:hidden; margin:6px 0 4px;}
+  .stackbar div{display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:500;}
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--sub); margin-top:6px;}
+  .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px;}
+
+  .creative{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px;}
+  .cre{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;}
+  .cre .thumb{height:104px; background:var(--paper); display:flex; align-items:center; justify-content:center; color:var(--faint); font-size:11px; border-bottom:1px solid var(--line);}
+  .cre .body{padding:10px 12px;}
+  .cre .cname{font-size:13px; font-weight:600;}
+  .cre .cmeta{font-size:11px; color:var(--faint); margin-bottom:8px;}
+  .cre .crow{display:flex; justify-content:space-between; font-size:12px; padding:2px 0;}
+  .cre .crow span:first-child{color:var(--sub);}
+
+  .kv{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; font-size:12px;}
+  .kv dt{color:var(--sub);} .kv dd{text-align:right; font-weight:500;}
+
+  .alert-row{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--line); font-size:13px;}
+  .alert-row:last-child{border-bottom:0;}
+  .alert-row .sev{font-size:11px; font-weight:600; padding:1px 8px; border-radius:5px; white-space:nowrap;}
+  .alert-row .when{margin-left:auto; font-size:11px; color:var(--faint); white-space:nowrap;}
+
+  .foot{margin-top:36px; font-size:12px; color:var(--faint); border-top:1px solid var(--line); padding-top:14px; line-height:1.7;}
+  .foot b{color:var(--sub);}
+  .ratewrap{display:grid; grid-template-columns:1fr 210px; gap:18px;}
+  @media (max-width:860px){.ratewrap{grid-template-columns:1fr;}}
+  .ratestats{display:flex; flex-direction:column; gap:10px; justify-content:center;}
+  .rstat{border-left:3px solid var(--line-strong); padding:2px 0 2px 10px;}
+  .rstat .rl{font-size:12px; color:var(--sub);}
+  .rstat .rv{font-size:20px; font-weight:600;}
+  .rstat .rd{font-size:11px;}
+  .spendrow{display:grid; grid-template-columns:150px 1fr 78px 74px; align-items:center; gap:10px; padding:3px 0; font-size:12px;}
+  .spendrow .sname{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .spendrow .strack{height:16px; background:var(--paper); border-radius:3px; position:relative;}
+  .spendrow .sbar{position:absolute; left:0; top:0; bottom:0; border-radius:3px; background:#1466C8;}
+  .spendrow .sv{text-align:right; font-weight:500;}
+  .spendrow .sd{text-align:right;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>MKT Digital Marketing</h1>
+      <span class="tag">Prototype</span>
+    </div>
+    <div class="fresh num">Data through 2026-08-18 · refreshed D-1 04:30 WIB</div>
+  </div>
+  <div class="layer-nav" id="lnav">
+    <button data-p="l1" class="on"><span class="lnum">L1</span>Overview</button>
+    <button data-p="l2"><span class="lnum">L2</span>Diagnostic</button>
+    <button data-p="l3"><span class="lnum">L3</span>Deep-dives</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ================= LAYER 1 ================= -->
+<div class="page on" id="l1">
+<section>
+    <div class="sec-label">Layer 1 · 30-second read</div>
+    <div class="sec-title">Is marketing on track?<small>D-1, vs last week, vs target</small></div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h3>Funnel — Aug 18</h3>
+      <div class="sub">Δ vs trailing 7-day average · conversion rate between each stage</div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+</section>
+
+  <section>
+    <div class="sec-title">User rate<small>daily funnel volumes, conversion rates and user mix</small></div>
+    <div class="toolbar">
+      <div class="toggle" role="group" aria-label="Chart or table">
+        <button id="ur-chart" class="on">Chart</button>
+        <button id="ur-table">Table</button>
+      </div>
+      <span class="hint">Jul 1–20 · rates read against the right axis</span>
+    </div>
+
+    <div id="urchartview">
+      <div class="card">
+        <h3>Volume and conversion</h3>
+        <div class="sub">Bars: install, applied, approved · lines: applied rate, approval rate</div>
+        <div class="ratewrap">
+          <div id="urcombo"></div>
+          <div class="ratestats" id="ratestats"></div>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:12px">
+        <div class="card">
+          <h3>Activated user mix</h3>
+          <div class="sub">Basic, premium and starter upgrade share of activated incl. upgrade</div>
+          <div id="urmix"></div>
+        </div>
+        <div class="card">
+          <h3>Activation pace vs plan</h3>
+          <div class="sub">Cumulative activated against required pace, and daily cost per activated</div>
+          <div id="urcum"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap" id="urtableview" style="display:none"><table id="urtable"></table></div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Acquisition mix — activated users</h3>
+        <div class="sub">Aug 18 · paid vs offline vs organic vs referral</div>
+        <div class="stackbar" id="mixbar"></div>
+        <div class="legend" id="mixlegend"></div>
+      </div>
+      <div class="card">
+        <h3>8-week trend — spend vs activated</h3>
+        <div class="sub">Weekly, with target line</div>
+        <div id="trendband"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">Total spend incl. subsidy</div>
+    <div class="tbl-wrap"><table id="legacy1"></table></div>
+</section>
+
+  <section>
+    <div class="sec-title">Spending by paid channel<small>Jul 13 · share of paid spend and change vs Jul 8</small></div>
+    <div class="toolbar">
+      <div class="toggle" role="group" aria-label="Chart or table">
+        <button id="sp-chart" class="on">Chart</button>
+        <button id="sp-table">Table</button>
+      </div>
+    </div>
+    <div class="card" id="spendchart"></div>
+    <div class="tbl-wrap" id="spendtable" style="display:none"><table id="legacy2"></table></div>
+  </section>
+</div>
+
+<!-- ================= LAYER 2 ================= -->
+<div class="page" id="l2">
+  <section>
+    <div class="sec-label">Layer 2 · 5-minute read</div>
+    <div class="sec-title">2.1 Channel × funnel<small>where users drop off, per channel</small></div>
+    <div class="toolbar">
+      <div class="toggle" role="group" aria-label="Gross or net">
+        <button id="btn-net" class="on">Net (post-fraud)</button>
+        <button id="btn-gross">Gross</button>
+      </div>
+      <select id="grain"><option>Daily · Aug 18</option><option>Last 7 days</option><option>MTD</option></select>
+      <span class="hint">Click a column header to sort · row → channel deep-dive</span>
+    </div>
+    <div class="tbl-wrap"><table id="matrix">
+      <thead><tr>
+        <th class="sortable" data-k="c" title="MKTDA-DD-001 media_source_group">Channel</th>
+        <th class="sortable" data-k="s" title="MKTDA-DD-014 spend_usd">Spend</th>
+        <th class="sortable" data-k="i" title="MKTDA-DD-002 install_valid_device">Installs</th>
+        <th class="sortable" data-k="ap" title="MKTDA-DD-005 net_applied">Applied</th>
+        <th class="sortable" data-k="aplr" title="applied / installs">Appl %</th>
+        <th class="sortable" data-k="pr" title="MKTDA-DD-008 net_approved basic+premium">Approved</th>
+        <th class="sortable" data-k="aprr" title="approved / applied">Appr %</th>
+        <th class="sortable" data-k="act" title="MKTDA-DD-011 net_activated">Activated</th>
+        <th class="sortable" data-k="cpi" title="spend / installs">CPI</th>
+        <th class="sortable" data-k="cpa" title="spend / approved, excl subsidy">CPA</th>
+        <th class="sortable" data-k="wow" title="approved Δ vs same day last week">Δ appr WoW</th>
+        <th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <div class="grid-2">
+      <div class="card">
+        <h3>2.2 Change decomposition — approved, WoW</h3>
+        <div class="sub">Which channels drove the −558 change vs Tue last week</div>
+        <div id="decomp"></div>
+      </div>
+      <div class="card">
+        <h3>2.4 True cost per activated user</h3>
+        <div class="sub">Cost per activated against volume delivered · bubble size = total spending</div>
+        <div id="truecpa"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title">2.3 Channel quality<small>are we buying good users, not just cheap ones?</small></div>
+    <div class="tbl-wrap"><table id="qtbl">
+      <thead><tr>
+        <th>Channel</th><th>Fraud share of applied</th><th>Junk install %</th><th>Click → approved</th>
+        <th>Approval rate</th><th>LTV @ MOB4*</th><th>CPA</th><th>LTV − CPA</th><th>Quality read</th>
+      </tr></thead><tbody id="qbody"></tbody>
+    </table></div>
+</section>
+
+  <section>
+    <div class="sec-title">2.5 Acquisition mix &amp; overlap<small>paid, offline, organic and referral overlap</small></div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Activation by acquisition channel</h3>
+        <div class="sub">Aug 18 · share and volume</div>
+        <div id="acqrows"></div>
+      </div>
+      <div class="card">
+        <h3>Media source × overlap type</h3>
+        <div class="sub">Basic + premium activated users, Aug 2026 — how much paid volume also touched offline or referral</div>
+        <div class="tbl-wrap" style="border:0"><table id="ovtbl">
+          <thead><tr><th>Media source</th><th>Offline</th><th>Referral</th><th>Post-fraud</th><th>Non-overlap</th></tr></thead>
+          <tbody id="ovbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+</section>
+</div>
+
+<!-- ================= LAYER 3 ================= -->
+<div class="page" id="l3">
+  <section>
+    <div class="sec-label">Layer 3 · full detail</div>
+    <div class="sec-title">Deep-dives<small>channel, creative, attribution, LTV and offline detail</small></div>
+    <div class="toolbar">
+      <div class="toggle" id="ddnav" role="group" aria-label="Deep-dive selector">
+        <button data-d="d1" class="on">3.1 Channel &amp; campaign</button>
+        <button data-d="d2">3.2 Creative / ad</button>
+        <button data-d="d3">3.3 Attribution &amp; fraud</button>
+        <button data-d="d4">3.4 LTV &amp; cohort</button>
+        <button data-d="d5">3.5 Offline / referral</button>
+      </div>
+    </div>
+
+    <!-- 3.1 -->
+    <div class="dd-page" id="d1">
+      <div class="toolbar">
+        <select id="chanpick"><option>Google</option><option>Apple Search Ads</option><option>Pokkt</option><option>Click2Commission</option><option>Inmobi</option></select>
+        <span class="hint">Gross → post-fraud → net cascade, then campaign level</span>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Funnel cascade — Google, Aug 18</h3>
+          <div class="sub">Every deduction visible, so net is explainable</div>
+          <div id="cascade"></div>
+        </div>
+        <div class="card">
+          <h3>Daily trend — 12 days</h3>
+          <div class="sub">Installs, applied, approved</div>
+          <div id="chantrend"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="card">
+        <h3>Campaign level</h3>
+        <div class="sub">Google · Aug 18 · sorted by spend</div>
+        <div class="tbl-wrap" style="border:0"><table id="camptbl">
+          <thead><tr><th>Campaign</th><th>Type</th><th>Spend</th><th>Installs</th><th>Applied</th><th>Approved</th><th>CPI</th><th>CPA</th><th>Δ CPA WoW</th></tr></thead>
+          <tbody id="campbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 3.2 -->
+    <div class="dd-page" id="d2" style="display:none">
+<div class="toolbar" style="margin-top:12px">
+        <select><option>All channels</option><option>Google</option><option>TikTok</option><option>Facebook</option></select>
+        <span class="hint">Top creatives by approved users, Aug 12–18</span>
+      </div>
+      <div class="creative" id="creatives"></div>
+      <div style="margin-top:12px" class="card">
+        <h3>Ad-level table</h3>
+        <div class="sub">Creative × placement × channel</div>
+        <div class="tbl-wrap" style="border:0"><table id="adtbl">
+          <thead><tr><th>Ad / creative</th><th>Channel</th><th>Format</th><th>Spend</th><th>Impr.</th><th>CTR</th><th>Installs</th><th>Approved</th><th>CPA</th></tr></thead>
+          <tbody id="adbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- 3.3 -->
+    <div class="dd-page" id="d3" style="display:none">
+      <div class="grid-2">
+        <div class="card">
+          <h3>AppsFlyer vs backend — install reconciliation</h3>
+          <div class="sub">Junk install % = (AF installs − backend installs) / AF installs</div>
+          <div class="tbl-wrap" style="border:0"><table id="rectbl">
+            <thead><tr><th>Channel</th><th>AF installs</th><th>Backend</th><th>Junk %</th><th>Status</th></tr></thead>
+            <tbody id="recbody"></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <h3>Post-fraud revision lag</h3>
+          <div class="sub">How much net applied gets revised down, by days since snapshot</div>
+          <div id="lagchart"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="card">
+        <h3>Click → approved by channel</h3>
+        <div class="sub">August MTD · the sharpest fraud signal</div>
+        <div id="ctabars"></div>
+      </div>
+    </div>
+
+    <!-- 3.4 -->
+    <div class="dd-page" id="d4" style="display:none">
+      <div class="card">
+        <h3>LTV per user by cohort × months on book</h3>
+        <div class="sub">Excl. starter · USD · shaded by value</div>
+        <div class="tbl-wrap" style="border:0"><table id="ltvtbl"></table></div>
+      </div>
+      <div style="margin-top:12px" class="grid-2">
+        <div class="card">
+          <h3>LTV curve by acquisition channel</h3>
+          <div class="sub">MOB 0 → 6, Mar 2026 cohort</div>
+          <div id="ltvcurve"></div>
+        </div>
+        <div class="card">
+          <h3>Payback vs CPA</h3>
+          <div class="sub">Months to recover acquisition cost</div>
+          <div id="payback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.5 -->
+    <div class="dd-page" id="d5" style="display:none">
+      <div class="grid-2">
+        <div class="card">
+          <h3>SPG performance — offline with promoter</h3>
+          <div class="sub">Aug 11–18 · fixed daily promoter spend</div>
+          <div class="tbl-wrap" style="border:0"><table id="spgtbl">
+            <thead><tr><th>Date</th><th>Applied</th><th>Approval</th><th>Activated</th><th>CPA excl. subsidy</th><th>Approval rate</th></tr></thead>
+            <tbody id="spgbody"></tbody>
+          </table></div>
+        </div>
+        <div class="card">
+          <h3>Referral contribution</h3>
+          <div class="sub">Referral users and their share of total applied and total activated</div>
+          <div id="refchart"></div>
+          <div class="ratestats" id="refstats" style="flex-direction:row;gap:18px;margin-top:12px"></div>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="card">
+        <h3>Spending: SPG vs non-SPG</h3>
+        <div class="sub">Monthly, USD — the structural spend question</div>
+        <div id="spgsplit"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</div>
+
+<script>
+/* ---------- shared ---------- */
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const pct = (n,d)=> d? (n/d*100) : 0;
+function go(p){
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("on", x.id===p));
+  document.querySelectorAll("#lnav button").forEach(b=>b.classList.toggle("on", b.dataset.p===p));
+  window.scrollTo({top:0, behavior:"instant"});
+}
+document.querySelectorAll("#lnav button").forEach(b=>b.onclick=()=>go(b.dataset.p));
+
+/* ---------- L1 tiles ---------- */
+const kpis = [
+  {lbl:"Spend incl. subsidy", val:"$113.2K", wow:-3.9, good:true, tgt:"94% of target", trend:[110.6, 123.7, 126.2, 115.0, 118.8, 111.9, 117.6, 113.2]},
+  {lbl:"Activated users", val:"8,100", wow:-7.1, good:false, tgt:"91% of target", trend:[7.6, 7.1, 6.8, 7.0, 7.2, 7.9, 7.7, 8.1]},
+  {lbl:"CPA incl. subsidy", val:"$15.7", wow:8.5, good:false, flat:true, tgt:"target ≤ $14.9", trend:[15.2, 16.0, 15.0, 16.6, 16.0, 15.0, 16.2, 15.7]},
+  {lbl:"Installs", val:"62.6K", wow:-9.9, good:false, tgt:"93% of target", trend:[63.5, 61.3, 63.1, 60.9, 62.8, 60.4, 57.6, 62.6]},
+  {lbl:"Approval rate", val:"14.9%", wow:-0.5, good:true, pp:true, tgt:"on target", trend:[16.2, 16.1, 14.8, 16.0, 14.3, 15.5, 14.5, 14.9]}
+];
+function spark(t){
+  const mn=Math.min(...t), mx=Math.max(...t), r=(mx-mn)||1;
+  const p=t.map((v,i)=>[(i/(t.length-1))*100, 26-((v-mn)/r)*24]);
+  return '<svg viewBox="0 0 100 28" preserveAspectRatio="none"><line x1="0" y1="14" x2="100" y2="14"></line><path d="M'+p.map(q=>q[0].toFixed(1)+","+q[1].toFixed(1)).join(" L")+'"></path></svg>';
+}
+document.getElementById("tiles").innerHTML = kpis.map(k=>{
+  const cls = k.flat? "flat" : (k.good? "up":"down");
+  return '<div class="tile"><div class="lbl">'+k.lbl+'</div><div class="val num">'+k.val+'</div>'+
+   '<div class="cmp"><span class="'+cls+' num">'+(k.wow>=0?"+":"")+k.wow.toFixed(1)+(k.pp?" pp":"%")+' WoW</span><span class="tgt">'+k.tgt+'</span></div>'+
+   '<div class="spark">'+spark(k.trend)+'</div></div>';
+}).join("");
+
+const stages=[{lbl:"Install",val:"62.6K",d:-2.3},{lbl:"Applied",val:"39.6K",d:-2.8,rate:"63%"},
+ {lbl:"Approved",val:"5,302",d:-7.2,rate:"13%"},{lbl:"Activated",val:"5,237",d:-9.0,rate:"99%"},
+ {lbl:"Transacting",val:"2,860",d:-13.8,rate:"55%"}];
+document.getElementById("funnel").innerHTML = stages.map((s,i)=>
+ (i? '<div class="gate"><span class="rate num">'+s.rate+'</span><span>→</span></div>':'')+
+ '<div class="stage"><div class="s-lbl">'+s.lbl+'</div><div class="s-val num">'+s.val+'</div><div class="s-d '+(s.d>=0?"up":"down")+' num">'+(s.d>=0?"+":"")+s.d.toFixed(1)+'%</div></div>').join("");
+
+/* acquisition mix */
+const mix=[{n:"Paid marketing",v:2162,c:"#1466C8"},{n:"Offline SPG",v:1783,c:"#0F6E56"},{n:"Organic",v:970,c:"#5B6B78"},{n:"Referral",v:240,c:"#854F0B"}];
+const mixT=mix.reduce((a,b)=>a+b.v,0);
+document.getElementById("mixbar").innerHTML = mix.map(m=>'<div style="width:'+pct(m.v,mixT).toFixed(1)+'%;background:'+m.c+'">'+pct(m.v,mixT).toFixed(0)+'%</div>').join("");
+document.getElementById("mixlegend").innerHTML = mix.map(m=>'<span><i style="background:'+m.c+'"></i>'+m.n+' <span class="num">'+fmt(m.v)+'</span></span>').join("");
+
+/* trend band */
+const wk=["Jun 29","Jul 6","Jul 13","Jul 20","Jul 27","Aug 3","Aug 10","Aug 17"];
+const sp=[111.2, 120.4, 119.2, 117.4, 122.8, 110.1, 118.7, 117.3], ac=[6.7, 6.8, 6.8, 7.7, 6.9, 8.3, 7.3, 6.6];
+(function(){
+  const h=132,w=100, mx=Math.max(...sp), mn=Math.min(...sp)*0.9;
+  const amx=Math.max(...ac), amn=Math.min(...ac)*0.85;
+  const px=(i)=>(i/(wk.length-1))*w;
+  const py=(v,lo,hi)=>h-12-((v-lo)/(hi-lo))*(h-30);
+  const l1="M"+sp.map((v,i)=>px(i).toFixed(1)+","+py(v,mn,mx).toFixed(1)).join(" L");
+  const l2="M"+ac.map((v,i)=>px(i).toFixed(1)+","+py(v,amn,amx).toFixed(1)).join(" L");
+  document.getElementById("trendband").innerHTML =
+   '<svg viewBox="0 0 100 '+h+'" preserveAspectRatio="none" style="width:100%;height:150px">'+
+   '<line x1="0" y1="'+py(101,mn,mx).toFixed(1)+'" x2="100" y2="'+py(101,mn,mx).toFixed(1)+'" stroke="#C9D2DA" stroke-dasharray="2 2" stroke-width="0.6"/>'+
+   '<path d="'+l1+'" fill="none" stroke="#1466C8" stroke-width="1.2" vector-effect="non-scaling-stroke"/>'+
+   '<path d="'+l2+'" fill="none" stroke="#0F6E56" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg>'+
+   '<div class="legend"><span><i style="background:#1466C8"></i>Spend incl. subsidy ($K/day avg)</span><span><i style="background:#0F6E56"></i>Activated (K/day avg)</span><span><i style="background:#C9D2DA"></i>Spend target</span></div>'+
+   '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:2px">'+wk.map(x=>'<span>'+x+'</span>').join("")+'</div>';
+})();
+
+/* legacy table 1 */
+const legDates=["2026-08-18","2026-08-17","2026-08-16","2026-08-15","2026-08-14","2026-08-13"];
+const legRows=[
+ ["install",[61936, 59376, 61022, 61262, 59809, 62455]],
+ ["applied",[38080, 35786, 38543, 38759, 36978, 38986]],
+ ["approval_all",[5332, 4709, 5807, 5237, 6116, 5282]],
+ ["activated_all",[5169, 4576, 5696, 5043, 6034, 5045]],
+ ["transacting_user_day",[2335, 2292, 3120, 2624, 3268, 2623]],
+ ["subsidy_cost",[10868, 9861, 10050, 11241, 11887, 12990],1],
+ ["total_spending",[112653, 111954, 114083, 110428, 112448, 106629],1],
+ ["total_spending_incl_subsidy",[123521, 121815, 124133, 121669, 124335, 119619],1]
+];
+function miniSpark(vals){
+  const v=[...vals].reverse();
+  const mn=Math.min(...v), mx=Math.max(...v), r=(mx-mn)||1;
+  const pts=v.map((x,i)=>[(i/(v.length-1))*100, 18-((x-mn)/r)*16]);
+  return '<svg viewBox="0 0 100 20" preserveAspectRatio="none" style="width:74px;height:20px"><path d="M'+
+   pts.map(q=>q[0].toFixed(1)+","+q[1].toFixed(1)).join(" L")+'" fill="none" stroke="#1466C8" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg>';
+}
+document.getElementById("legacy1").innerHTML =
+ '<thead><tr><th>Metric</th>'+legDates.map(d=>'<th>'+d+'</th>').join("")+'<th>Trend</th><th>Δ vs Aug 13</th></tr></thead><tbody>'+
+ legRows.map(r=>{
+   const d=pct(r[1][0]-r[1][5], r[1][5]);
+   return '<tr><td>'+r[0]+'</td>'+r[1].map(v=>'<td class="num">'+(r[2]?"$":"")+fmt(v)+'</td>').join("")+
+   '<td>'+miniSpark(r[1])+'</td>'+
+   '<td class="num" style="color:'+(d>=0?"var(--good)":"var(--bad)")+'">'+(d>=0?"+":"")+d.toFixed(1)+'%</td></tr>';
+ }).join("")+'</tbody>';
+
+/* ---------- L2 matrix ---------- */
+const rows=[
+ {c:"Apple Search Ads",s:5791,i:1696,an:530,ag:562,pn:41,pg:42,act:41,wow:-86},
+ {c:"Google",s:9915,i:16004,an:11677,ag:12111,pn:1568,pg:1598,act:1527,wow:-112},
+ {c:"Click2Commission",s:2688,i:10522,an:2753,ag:2929,pn:255,pg:267,act:254,wow:-140},
+ {c:"Pokkt",s:3747,i:7140,an:1029,ag:1065,pn:54,pg:57,act:54,wow:-117},
+ {c:"Inmobi",s:2517,i:23482,an:4313,ag:4550,pn:494,pg:504,act:484,wow:-77},
+ {c:"Lucent",s:1611,i:16507,an:3600,ag:3623,pn:197,pg:198,act:195,wow:2},
+ {c:"Radiant",s:1042,i:17910,an:4804,ag:4933,pn:672,pg:682,act:678,wow:-95},
+ {c:"AVOW",s:2450,i:13268,an:7657,ag:8210,pn:1201,pg:1214,act:1192,wow:-83},
+ {c:"TikTok",s:1579,i:856,an:643,ag:648,pn:74,pg:78,act:72,wow:126},
+ {c:"Facebook",s:507,i:770,an:451,ag:475,pn:72,pg:74,act:71,wow:10},
+ {c:"Moloco",s:1766,i:974,an:913,ag:932,pn:120,pg:122,act:118,wow:51},
+ {c:"Organic",s:0,i:30410,an:15837,ag:16274,pn:2749,pg:2891,act:2623,wow:15}
+];
+let mode="net", sortK="pr", dir=-1;
+const der=r=>{const ap=mode==="net"?r.an:r.ag, pr=mode==="net"?r.pn:r.pg;
+ return {...r,ap,pr,aplr:pct(ap,r.i),aprr:pct(pr,ap),cpi:r.s>0?r.s/r.i:null,cpa:r.s>0&&pr?r.s/pr:null};};
+const chipC=p=>p>=60?"g":p>=25?"w":"b";
+function renderMatrix(){
+  const d=rows.map(der).sort((a,b)=>{
+    const x=a[sortK], y=b[sortK];
+    const xv=x==null?-Infinity:(typeof x==="string"?x.toLowerCase():x);
+    const yv=y==null?-Infinity:(typeof y==="string"?y.toLowerCase():y);
+    return (xv<yv?-1:xv>yv?1:0)*dir;});
+  const tb=document.querySelector("#matrix tbody");
+  tb.innerHTML=d.map(r=>{
+    const hi=r.cpa!==null&&r.cpa>18;
+    return '<tr><td>'+r.c+'</td><td class="num">'+(r.s?"$"+fmt(r.s):"—")+'</td><td class="num">'+fmt(r.i)+'</td>'+
+    '<td class="num">'+fmt(r.ap)+'</td><td><span class="chip '+chipC(r.aplr)+' num">'+r.aplr.toFixed(0)+'%</span></td>'+
+    '<td class="num">'+fmt(r.pr)+'</td><td class="num">'+r.aprr.toFixed(1)+'%</td><td class="num">'+fmt(r.act)+'</td>'+
+    '<td class="num">'+(r.cpi!==null?"$"+r.cpi.toFixed(2):"—")+'</td>'+
+    '<td class="num" style="color:'+(hi?"var(--bad)":"inherit")+';font-weight:'+(hi?"600":"400")+'">'+(r.cpa!==null?"$"+r.cpa.toFixed(1):"—")+'</td>'+
+    '<td class="num" style="color:'+(r.wow>=0?"var(--good)":"var(--bad)")+'">'+(r.wow>=0?"+":"")+r.wow+'</td>'+
+    '<td><span class="dd" onclick="go(\'l3\')">deep-dive ↗</span></td></tr>';}).join("");
+  const t=rows.map(der).reduce((a,r)=>({s:a.s+r.s,i:a.i+r.i,ap:a.ap+r.ap,pr:a.pr+r.pr,act:a.act+r.act,wow:a.wow+r.wow}),{s:0,i:0,ap:0,pr:0,act:0,wow:0});
+  tb.innerHTML+='<tr class="total"><td>Total (shown)</td><td class="num">$'+fmt(t.s)+'</td><td class="num">'+fmt(t.i)+'</td>'+
+   '<td class="num">'+fmt(t.ap)+'</td><td class="num">'+pct(t.ap,t.i).toFixed(0)+'%</td><td class="num">'+fmt(t.pr)+'</td>'+
+   '<td class="num">'+pct(t.pr,t.ap).toFixed(1)+'%</td><td class="num">'+fmt(t.act)+'</td><td class="num">$'+(t.s/t.i).toFixed(2)+'</td>'+
+   '<td class="num">$'+(t.s/t.pr).toFixed(1)+'</td><td class="num" style="color:var(--bad)">'+t.wow+'</td><td></td></tr>';
+  document.querySelectorAll("#matrix th.sortable").forEach(th=>{
+    const base=th.textContent.replace(/ [▲▼]$/,"");
+    th.innerHTML=base+(th.dataset.k===sortK?' <span class="s-ind">'+(dir<0?"▼":"▲")+'</span>':"");
+  });
+  document.getElementById("btn-net").className=mode==="net"?"on":"";
+  document.getElementById("btn-gross").className=mode==="gross"?"on":"";
+}
+document.querySelectorAll("#matrix th.sortable").forEach(th=>th.addEventListener("click",()=>{
+  const k=th.dataset.k; if(sortK===k){dir*=-1;}else{sortK=k;dir=-1;} renderMatrix();}));
+document.getElementById("btn-net").onclick=()=>{mode="net";renderMatrix();};
+document.getElementById("btn-gross").onclick=()=>{mode="gross";renderMatrix();};
+renderMatrix();
+
+/* decomposition */
+const dec=[{n:"Offline SPG",v:-133},{n:"Organic",v:119},{n:"Radiant",v:110},{n:"Google",v:104},{n:"Lucent",v:-289},{n:"Inmobi",v:82},{n:"Pokkt",v:-337},{n:"Click2Commission",v:-232}].sort((a,b)=>a.v-b.v);
+const dmax=Math.max(...dec.map(d=>Math.abs(d.v)));
+document.getElementById("decomp").innerHTML=dec.map(d=>{
+ const w=Math.abs(d.v)/dmax*48;
+ return '<div class="bar-row"><div class="name">'+d.n+'</div><div class="bar-track"><div class="zero" style="left:50%"></div>'+
+ '<div class="bar '+(d.v>=0?"pos":"neg")+'" style="width:'+w.toFixed(1)+'%"></div></div>'+
+ '<div class="v num" style="color:'+(d.v>=0?"var(--good)":"var(--bad)")+'">'+(d.v>=0?"+":"")+d.v+'</div></div>';}).join("")+
+ '<div class="bar-row" style="border-top:1px solid var(--line);margin-top:4px;padding-top:8px"><div class="name" style="font-weight:600">Net change</div><div class="bar-track"></div><div class="v num" style="color:var(--bad);font-weight:600">−558</div></div>';
+
+/* true cost per activated */
+const tc=[
+ {c:"Radiant",act:262,cpa:8.1},
+ {c:"Click2Commission",act:341,cpa:9.3},
+ {c:"Lucent",act:154,cpa:11.4},
+ {c:"Pokkt",act:208,cpa:12.6},
+ {c:"Inmobi",act:131,cpa:13.9},
+ {c:"Apple Search Ads",act:472,cpa:14.8},
+ {c:"AVOW",act:83,cpa:17.2},
+ {c:"TikTok",act:61,cpa:19.6},
+ {c:"Google",act:414,cpa:21.4},
+ {c:"Offline SPG",act:2104,cpa:22.7},
+ {c:"Moloco",act:46,cpa:24.1}
+];
+(function(){
+  const W=340,H=225, L=42,R=14,T=12,B=34;
+  const xs=tc.map(d=>Math.log10(d.act)), ys=tc.map(d=>d.cpa);
+  const x0=Math.min(...xs)-0.12, x1=Math.max(...xs)+0.12;
+  const y0=0, y1=Math.max(...ys)*1.12;
+  const X=v=>L+((Math.log10(v)-x0)/(x1-x0))*(W-L-R);
+  const Y=v=>T+(1-(v-y0)/(y1-y0))*(H-T-B);
+  const spendOf=d=>d.act*d.cpa;
+  const smax=Math.max(...tc.map(spendOf));
+  const rOf=d=>4+Math.sqrt(spendOf(d)/smax)*11;
+  const xticks=[50,100,250,500,1000,2500].filter(v=>Math.log10(v)>=x0&&Math.log10(v)<=x1);
+  const yticks=[0,5,10,15,20,25].filter(v=>v<=y1);
+  let g='';
+  yticks.forEach(v=>{ g+='<line x1="'+L+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(v).toFixed(1)+'" stroke="#E2E7EC" stroke-width="1"/>'+
+    '<text x="'+(L-7)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" font-size="9" fill="#8A97A2">$'+v+'</text>'; });
+  xticks.forEach(v=>{ g+='<text x="'+X(v).toFixed(1)+'" y="'+(H-B+15)+'" text-anchor="middle" font-size="9" fill="#8A97A2">'+v.toLocaleString()+'</text>'; });
+  const pts=tc.map(d=>{
+    const cx=X(d.act), cy=Y(d.cpa), r=rOf(d);
+    const right = cx < W-R-70;
+    return '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="#1466C8" fill-opacity="0.22" stroke="#1466C8" stroke-width="1.2"/>'+
+     '<text x="'+(right? (cx+r+4).toFixed(1) : (cx-r-4).toFixed(1))+'" y="'+(cy+3).toFixed(1)+'" font-size="9.5" fill="#16232E" text-anchor="'+(right?"start":"end")+'">'+d.c+'</text>';
+  }).join("");
+  document.getElementById("truecpa").innerHTML=
+   '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img">'+
+   g+
+   '<line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="#C9D2DA" stroke-width="1"/>'+
+   pts+
+   '<text x="'+((L+W-R)/2)+'" y="'+(H-3)+'" text-anchor="middle" font-size="9.5" fill="#5B6B78">Activated users (log scale)</text>'+
+   '<text x="11" y="'+((T+H-B)/2)+'" text-anchor="middle" font-size="9.5" fill="#5B6B78" transform="rotate(-90 11 '+((T+H-B)/2)+')">Cost per activated</text>'+
+   '</svg>';
+})();
+
+/* quality */
+const qual=[
+ {c:"Google",f:0,j:9,cta:"1.1888%",apr:15.0,ltv:23,cpa:23.3,r:["g","Clean, high value"]},
+ {c:"Apple Search Ads",f:0,j:12,cta:"—",apr:8.4,ltv:26,cpa:22.0,r:["g","Clean, high value"]},
+ {c:"Moloco",f:0,j:8,cta:"0.7672%",apr:10.7,ltv:10,cpa:15.7,r:["w","Watch quality"]},
+ {c:"TikTok",f:0,j:6,cta:"—",apr:14.6,ltv:6,cpa:20.9,r:["w","Watch quality"]},
+ {c:"AVOW",f:66,j:45,cta:"0.0058%",apr:17.5,ltv:31,cpa:18.1,r:["b","High fraud + junk"]},
+ {c:"Radiant",f:52,j:45,cta:"0.0144%",apr:16.6,ltv:17,cpa:17.7,r:["w","Watch quality"]},
+ {c:"Lucent",f:11,j:28,cta:"0.0090%",apr:11.0,ltv:8,cpa:10.4,r:["w","Watch quality"]},
+ {c:"Click2Commission",f:29,j:32,cta:"0.0258%",apr:9.5,ltv:31,cpa:19.1,r:["w","Watch quality"]},
+ {c:"Pokkt",f:25,j:23,cta:"0.0061%",apr:8.0,ltv:34,cpa:24.9,r:["b","High fraud + junk"]},
+ {c:"Inmobi",f:37,j:21,cta:"0.0022%",apr:14.3,ltv:12,cpa:18.7,r:["b","High fraud + junk"]}
+];
+document.getElementById("qbody").innerHTML=qual.map(q=>{
+ const m=q.ltv-q.cpa;
+ return '<tr><td>'+q.c+'</td><td class="num">'+q.f+'%</td><td class="num">'+q.j+'%</td><td class="num">'+q.cta+'</td>'+
+ '<td class="num">'+q.apr.toFixed(1)+'%</td><td class="num">$'+q.ltv+'</td><td class="num">$'+q.cpa.toFixed(1)+'</td>'+
+ '<td class="num" style="color:'+(m>=0?"var(--good)":"var(--bad)")+';font-weight:500">'+(m>=0?"+":"−")+'$'+Math.abs(m).toFixed(1)+'</td>'+
+ '<td><span class="chip '+q.r[0]+'">'+q.r[1]+'</span></td></tr>';}).join("");
+
+/* acquisition rows */
+const acq=[{n:"Paid marketing",v:2162},{n:"Offline SPG",v:1783},{n:"Organic",v:970},{n:"Referral",v:240},{n:"Referral merchant",v:30},{n:"Offline Kredimitra",v:16}];
+const amax=Math.max(...acq.map(a=>a.v));
+document.getElementById("acqrows").innerHTML=acq.map(a=>
+ '<div class="bar-row"><div class="name">'+a.n+'</div><div class="bar-track" style="background:var(--paper);border-radius:3px">'+
+ '<div class="bar" style="left:0;width:'+(a.v/amax*100).toFixed(1)+'%;background:#1466C8"></div></div>'+
+ '<div class="v num">'+fmt(a.v)+'</div></div>').join("");
+
+/* overlap */
+const ov=[{c:"Apple Search Ads",o:48.6,r:3.4,p:0,n:48.0},{c:"AVOW",o:37.9,r:2.5,p:5.8,n:53.8},{c:"Click2Commission",o:54.6,r:6.0,p:0,n:39.4},{c:"Pokkt",o:51.6,r:6.0,p:4.5,n:37.9},{c:"Google",o:37.2,r:3.6,p:0,n:59.2}];
+document.getElementById("ovbody").innerHTML=ov.map(x=>
+ '<tr><td>'+x.c+'</td><td class="num">'+x.o.toFixed(1)+'%</td><td class="num">'+x.r.toFixed(1)+'%</td>'+
+ '<td class="num">'+x.p.toFixed(1)+'%</td><td class="num" style="font-weight:500">'+x.n.toFixed(1)+'%</td></tr>').join("");
+
+/* ---------- L3 nav ---------- */
+document.querySelectorAll("#ddnav button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#ddnav button").forEach(x=>x.classList.toggle("on",x===b));
+  document.querySelectorAll(".dd-page").forEach(p=>p.style.display = p.id===b.dataset.d ? "block":"none");
+});
+
+/* 3.1 cascade */
+const casc=[{n:"Gross installs",v:6383},{n:"Gross applied",v:4799},{n:"− post-fraud applied",v:0,neg:1},
+ {n:"Net applied",v:4799},{n:"Basic + premium approval",v:582},{n:"− post-fraud approved",v:0,neg:1},
+ {n:"Net approved",v:582},{n:"Net activated",v:580}];
+const cmax=Math.max(...casc.map(c=>c.v));
+document.getElementById("cascade").innerHTML=casc.map(c=>
+ '<div class="bar-row"><div class="name" style="'+(c.neg?"color:var(--bad)":"")+'">'+c.n+'</div>'+
+ '<div class="bar-track" style="background:var(--paper);border-radius:3px">'+
+ '<div class="bar" style="left:0;width:'+(c.v/cmax*100).toFixed(1)+'%;background:'+(c.neg?"var(--bad)":"#1466C8")+'"></div></div>'+
+ '<div class="v num">'+fmt(c.v)+'</div></div>').join("");
+
+/* 3.1 trend */
+(function(){
+  const days=["07","08","09","10","11","12","13","14","15","16","17","18"];
+  const ins=[6541,9487,5894,6458,5110,5943,6156,7620,6875,8818,6989,8131];
+  const app=[4761,6974,4035,4674,3502,3982,4352,5747,4526,5981,4388,5972];
+  const apr=[454,568,461,558,318,340,325,491,332,540,335,467];
+  const h=120, mx=Math.max(...ins);
+  const line=(arr,col,scale)=>'<path d="M'+arr.map((v,i)=>((i/(arr.length-1))*100).toFixed(1)+","+(h-8-(v/scale)*(h-20)).toFixed(1)).join(" L")+'" fill="none" stroke="'+col+'" stroke-width="1.2" vector-effect="non-scaling-stroke"/>';
+  document.getElementById("chantrend").innerHTML=
+   '<svg viewBox="0 0 100 '+h+'" preserveAspectRatio="none" style="width:100%;height:140px">'+
+   line(ins,"#1466C8",mx)+line(app,"#0F6E56",mx)+line(apr.map(v=>v*8),"#854F0B",mx)+'</svg>'+
+   '<div class="legend"><span><i style="background:#1466C8"></i>Installs</span><span><i style="background:#0F6E56"></i>Applied</span><span><i style="background:#854F0B"></i>Approved (×8)</span></div>'+
+   '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint)">'+days.map(d=>'<span>'+d+'</span>').join("")+'</div>';
+})();
+
+/* 3.1 campaigns */
+const camps=[
+ {n:"ID_AC_Installs_Broad",t:"App campaign",s:1656,i:1595,a:1213,p:145,d:3.1},
+ {n:"ID_AC_Actions_Approval",t:"tCPA approval",s:1866,i:1200,a:910,p:126,d:4.2},
+ {n:"ID_Search_Brand_Exact",t:"Search",s:3074,i:1691,a:1130,p:158,d:7.0},
+ {n:"ID_AC_Retarget_Applied",t:"Re-engagement",s:1534,i:578,a:396,p:50,d:-7.4},
+ {n:"ID_Discovery_Prospecting",t:"Demand gen",s:2022,i:1116,a:771,p:87,d:2.2}
+];
+document.getElementById("campbody").innerHTML=camps.map(c=>
+ '<tr><td>'+c.n+'</td><td><span class="chip n">'+c.t+'</span></td><td class="num">$'+fmt(c.s)+'</td>'+
+ '<td class="num">'+fmt(c.i)+'</td><td class="num">'+fmt(c.a)+'</td><td class="num">'+fmt(c.p)+'</td>'+
+ '<td class="num">$'+(c.s/c.i).toFixed(2)+'</td><td class="num">$'+(c.s/c.p).toFixed(1)+'</td>'+
+ '<td class="num" style="color:'+(c.d<=0?"var(--good)":"var(--bad)")+'">'+(c.d>=0?"+":"")+c.d.toFixed(1)+'%</td></tr>').join("");
+
+/* 3.2 creatives */
+const cre=[
+ {n:"Limit up to 50jt",m:"Video 15s · Google",s:989,p:99,cpa:10.0,ctr:1.37},
+ {n:"Cicilan 0% merchant",m:"Video 20s · TikTok",s:1351,p:85,cpa:15.9,ctr:1.85},
+ {n:"Approval in 3 min",m:"Static · Meta",s:438,p:63,cpa:7.0,ctr:1.99},
+ {n:"Ramadan promo cutdown",m:"Video 6s · Google",s:1496,p:25,cpa:59.8,ctr:1.04}
+];
+document.getElementById("creatives").innerHTML=cre.map(c=>
+ '<div class="cre"><div class="thumb">creative preview</div><div class="body">'+
+ '<div class="cname">'+c.n+'</div><div class="cmeta">'+c.m+'</div>'+
+ '<div class="crow"><span>Spend</span><span class="num">$'+fmt(c.s)+'</span></div>'+
+ '<div class="crow"><span>Approved</span><span class="num">'+c.p+'</span></div>'+
+ '<div class="crow"><span>CPA</span><span class="num">$'+c.cpa.toFixed(1)+'</span></div>'+
+ '<div class="crow"><span>CTR</span><span class="num">'+c.ctr.toFixed(2)+'%</span></div></div></div>').join("");
+const ads=[
+ {n:"Limit up to 50jt",c:"Google",f:"Video 15s",s:486,im:459208,ctr:2.13,i:269,p:66},
+ {n:"Cicilan 0% merchant",c:"TikTok",f:"Video 20s",s:955,im:476440,ctr:1.87,i:494,p:78},
+ {n:"Approval in 3 min",c:"Meta",f:"Static",s:738,im:362682,ctr:2.37,i:285,p:17},
+ {n:"Ramadan promo cutdown",c:"Google",f:"Video 6s",s:1085,im:185446,ctr:1.56,i:216,p:101}
+];
+document.getElementById("adbody").innerHTML=ads.map(a=>
+ '<tr><td>'+a.n+'</td><td>'+a.c+'</td><td><span class="chip n">'+a.f+'</span></td><td class="num">$'+fmt(a.s)+'</td>'+
+ '<td class="num">'+fmt(a.im)+'</td><td class="num">'+a.ctr.toFixed(2)+'%</td><td class="num">'+fmt(a.i)+'</td>'+
+ '<td class="num">'+a.p+'</td><td class="num">$'+(a.s/a.p).toFixed(1)+'</td></tr>').join("");
+
+/* 3.3 reconciliation */
+const rec=[{c:"Google",af:11651,be:10911},{c:"Apple Search Ads",af:18621,be:16413},{c:"Pokkt",af:30869,be:17384},{c:"Click2Commission",af:37442,be:16346},{c:"Inmobi",af:34496,be:16912},{c:"Radiant",af:28263,be:13733}];
+document.getElementById("recbody").innerHTML=rec.map(r=>{
+ const j=pct(r.af-r.be,r.af);
+ const cls=j<15?"g":j<40?"w":"b";
+ return '<tr><td>'+r.c+'</td><td class="num">'+fmt(r.af)+'</td><td class="num">'+fmt(r.be)+'</td>'+
+ '<td class="num">'+j.toFixed(0)+'%</td><td><span class="chip '+cls+'">'+(j<15?"Clean":j<40?"Watch":"High")+'</span></td></tr>';}).join("");
+
+/* 3.3 lag */
+const lag=[{d:"D-0",v:3.2},{d:"D-1",v:4.0},{d:"D-2",v:8.8},{d:"D-3",v:11.1},{d:"D-4",v:14.5},{d:"D-5",v:17.2},{d:"D-6",v:17.5},{d:"D-7",v:19.2}];
+document.getElementById("lagchart").innerHTML=lag.map(l=>
+ '<div class="bar-row" style="grid-template-columns:48px 1fr 56px"><div class="name">'+l.d+'</div>'+
+ '<div class="bar-track" style="background:var(--paper);border-radius:3px">'+
+ '<div class="bar" style="left:0;width:'+(l.v/17.5*100).toFixed(1)+'%;background:'+(l.v<10?"var(--warn)":"var(--bad)")+'"></div></div>'+
+ '<div class="v num">'+l.v.toFixed(1)+'%</div></div>').join("")+
+ '<div style="font-size:11px;color:var(--faint);margin-top:6px">Cumulative % of applied removed as fraud, by age of the snapshot.</div>';
+
+/* 3.3 click to approved */
+const cta=[{c:"Google",v:0.5966},{c:"AVOW",v:0.0275},{c:"Moloco",v:1.0026},{c:"Radiant",v:0.0019},{c:"Click2Commission",v:0.0111},{c:"Pokkt",v:0.0147},{c:"Lucent",v:0.0053},{c:"Inmobi",v:0.0014}];
+const ctamax=Math.max(...cta.map(x=>Math.log10(x.v*10000+1)));
+document.getElementById("ctabars").innerHTML=cta.map(x=>
+ '<div class="bar-row" style="grid-template-columns:130px 1fr 74px"><div class="name">'+x.c+'</div>'+
+ '<div class="bar-track" style="background:var(--paper);border-radius:3px">'+
+ '<div class="bar" style="left:0;width:'+(Math.log10(x.v*10000+1)/ctamax*100).toFixed(1)+'%;background:'+(x.v>0.01?"var(--good)":"var(--bad)")+'"></div></div>'+
+ '<div class="v num">'+x.v.toFixed(4)+'%</div></div>').join("")+
+ '<div style="font-size:11px;color:var(--faint);margin-top:6px">Log scale.</div>';
+
+/* 3.4 LTV cohort */
+const ltvCh=["Google","Apple Search Ads","Organic","Offline SPG","C2C","Pokkt","Inmobi","Referral"];
+const mob=[0,1,2,3,4,5,6];
+const base={
+ "Google":[-14, -5, 2, 7, 11, 14, 18],
+ "Apple Search Ads":[-6, -3, 0, 2, 4, 5, 6],
+ "Organic":[-7, 4, 11, 18, 24, 31, 36],
+ "Offline SPG":[-4, 5, 12, 20, 26, 30, 35],
+ "C2C":[-11, -5, 1, 6, 11, 14, 16],
+ "Pokkt":[-13, -5, 1, 7, 12, 18, 22],
+ "Inmobi":[-7, -1, 2, 4, 8, 10, 13],
+ "Referral":[-11, -4, 4, 13, 20, 25, 32]
+};
+document.getElementById("ltvtbl").innerHTML=
+ '<thead><tr><th>Acquisition channel</th>'+mob.map(m=>'<th>MOB '+m+'</th>').join("")+'</tr></thead><tbody>'+
+ ltvCh.map(c=>'<tr><td>'+c+'</td>'+base[c].map(v=>{
+   const col=v<0?"var(--bad-bg)":v<15?"var(--warn-bg)":"var(--good-bg)";
+   const tx=v<0?"var(--bad)":v<15?"var(--warn)":"var(--good)";
+   return '<td><span class="chip num" style="background:'+col+';color:'+tx+'">'+(v<0?"−$":"$")+Math.abs(v)+'</span></td>';
+ }).join("")+'</tr>').join("")+'</tbody>';
+
+(function(){
+  const h=130, keys=["Google","Organic","Offline SPG","Pokkt"], cols=["#1466C8","#5B6B78","#0F6E56","#A32D2D"];
+  const all=keys.flatMap(k=>base[k]), mn=Math.min(...all), mx=Math.max(...all);
+  const paths=keys.map((k,i)=>'<path d="M'+base[k].map((v,j)=>((j/6)*100).toFixed(1)+","+(h-10-((v-mn)/(mx-mn))*(h-24)).toFixed(1)).join(" L")+'" fill="none" stroke="'+cols[i]+'" stroke-width="1.2" vector-effect="non-scaling-stroke"/>').join("");
+  document.getElementById("ltvcurve").innerHTML='<svg viewBox="0 0 100 '+h+'" preserveAspectRatio="none" style="width:100%;height:150px">'+
+   '<line x1="0" y1="'+(h-10-((0-mn)/(mx-mn))*(h-24)).toFixed(1)+'" x2="100" y2="'+(h-10-((0-mn)/(mx-mn))*(h-24)).toFixed(1)+'" stroke="#C9D2DA" stroke-width="0.6"/>'+paths+'</svg>'+
+   '<div class="legend">'+keys.map((k,i)=>'<span><i style="background:'+cols[i]+'"></i>'+k+'</span>').join("")+'</div>';
+})();
+
+const pay=[{c:"Organic",m:7.3},{c:"Apple Search Ads",m:6.1},{c:"Google",m:1.9},{c:"Referral",m:3.8},{c:"Offline SPG",m:4.8},{c:"Click2Commission",m:8.2},{c:"Pokkt",m:4.3},{c:"Inmobi",m:4.1}];
+document.getElementById("payback").innerHTML=pay.map(p=>
+ '<div class="bar-row" style="grid-template-columns:140px 1fr 60px"><div class="name">'+p.c+'</div>'+
+ '<div class="bar-track" style="background:var(--paper);border-radius:3px">'+
+ '<div class="bar" style="left:0;width:'+(p.m/8*100).toFixed(1)+'%;background:'+(p.m<3?"var(--good)":p.m<5?"var(--warn)":"var(--bad)")+'"></div></div>'+
+ '<div class="v num">'+p.m.toFixed(1)+' mo</div></div>').join("")+
+ '<div style="font-size:11px;color:var(--faint);margin-top:6px">Target payback ≤ 4 months.</div>';
+
+/* 3.5 SPG */
+const spg=[["Aug 18",8424,3406,3389,21,40.4],["Aug 17",5359,2211,2204,22,41.3],["Aug 16",7598,3440,3438,12,45.3],["Aug 15",6676,2674,2670,29,40.1],["Aug 14",5249,2183,2177,19,41.6],["Aug 13",6078,2503,2491,30,41.2],["Aug 12",6629,2321,2314,19,35.0],["Aug 11",6584,2279,2277,14,34.6]];
+document.getElementById("spgbody").innerHTML=spg.map(r=>
+ '<tr><td>'+r[0]+'</td><td class="num">'+fmt(r[1])+'</td><td class="num">'+fmt(r[2])+'</td><td class="num">'+fmt(r[3])+'</td>'+
+ '<td class="num" style="color:'+(r[4]>22?"var(--bad)":"inherit")+'">$'+r[4]+'</td><td class="num">'+r[5].toFixed(1)+'%</td></tr>').join("");
+
+const refD=[
+ {d:"05",ra:913,rv:214,pa:2.29,pv:3.64},
+ {d:"06",ra:1532,rv:286,pa:3.44,pv:5.01},
+ {d:"07",ra:914,rv:239,pa:2.36,pv:4.08},
+ {d:"08",ra:1498,rv:333,pa:3.44,pv:5.36},
+ {d:"09",ra:1592,rv:216,pa:3.46,pv:3.84},
+ {d:"10",ra:1358,rv:234,pa:3.51,pv:4.25},
+ {d:"11",ra:1360,rv:238,pa:3.09,pv:3.87},
+ {d:"12",ra:957,rv:259,pa:2.28,pv:4.41},
+ {d:"13",ra:831,rv:254,pa:2.13,pv:4.51},
+ {d:"14",ra:1004,rv:205,pa:2.6,pv:4.1},
+ {d:"15",ra:972,rv:298,pa:2.33,pv:5.51},
+ {d:"16",ra:1155,rv:253,pa:2.92,pv:5.23},
+ {d:"17",ra:1201,rv:288,pa:3.12,pv:5.76},
+ {d:"18",ra:1601,rv:297,pa:3.52,pv:5.1}
+];
+(function(){
+  const W=340,H=210,L=40,R=40,T=12,B=30, n=refD.length;
+  const vmax=Math.max(...refD.map(r=>r.ra))*1.15;
+  const pmax=Math.max(...refD.map(r=>Math.max(r.pa,r.pv)))*1.25;
+  const bw=(W-L-R)/n;
+  const Yv=v=>T+(1-v/vmax)*(H-T-B);
+  const Yp=v=>T+(1-v/pmax)*(H-T-B);
+  const cx=i=>L+bw*i+bw/2;
+  let bars="";
+  refD.forEach((r,i)=>{
+    const x=L+bw*i;
+    bars+='<rect x="'+(x+bw*0.14).toFixed(1)+'" y="'+Yv(r.ra).toFixed(1)+'" width="'+(bw*0.72).toFixed(1)+'" height="'+(H-B-Yv(r.ra)).toFixed(1)+'" fill="#D6E4F5"/>';
+    bars+='<rect x="'+(x+bw*0.14).toFixed(1)+'" y="'+Yv(r.rv).toFixed(1)+'" width="'+(bw*0.72).toFixed(1)+'" height="'+(H-B-Yv(r.rv)).toFixed(1)+'" fill="#1466C8"/>';
+  });
+  const line=(k,col)=>'<path d="M'+refD.map((r,i)=>cx(i).toFixed(1)+","+Yp(r[k]).toFixed(1)).join(" L")+'" fill="none" stroke="'+col+'" stroke-width="1.6"/>'+
+    refD.map((r,i)=>'<circle cx="'+cx(i).toFixed(1)+'" cy="'+Yp(r[k]).toFixed(1)+'" r="1.8" fill="'+col+'"/>').join("");
+  let ax='';
+  [0,vmax/2,vmax].forEach(v=>{ ax+='<text x="'+(L-6)+'" y="'+(Yv(v)+3.5).toFixed(1)+'" text-anchor="end" font-size="9" fill="#8A97A2">'+fmt(v)+'</text>'; });
+  [0,pmax/2,pmax].forEach(v=>{ ax+='<text x="'+(W-R+6)+'" y="'+(Yp(v)+3.5).toFixed(1)+'" text-anchor="start" font-size="9" fill="#8A97A2">'+v.toFixed(1)+'%</text>'; });
+  refD.forEach((r,i)=>{ if(i%3===0) ax+='<text x="'+cx(i).toFixed(1)+'" y="'+(H-B+14)+'" text-anchor="middle" font-size="9" fill="#8A97A2">'+r.d+'</text>'; });
+  document.getElementById("refchart").innerHTML=
+   '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img">'+
+   '<line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="#C9D2DA" stroke-width="1"/>'+
+   bars+line("pa","#0F6E56")+line("pv","#854F0B")+ax+'</svg>'+
+   '<div class="legend"><span><i style="background:#D6E4F5"></i>Referral applied</span>'+
+   '<span><i style="background:#1466C8"></i>Referral activated</span>'+
+   '<span><i style="background:#0F6E56"></i>% of total applied</span>'+
+   '<span><i style="background:#854F0B"></i>% of total activated</span></div>';
+  const last=refD[refD.length-1];
+  const avg=k=>refD.reduce((a,b)=>a+b[k],0)/refD.length;
+  document.getElementById("refstats").innerHTML=
+   [{l:"Share of applied",v:last.pa,a:avg("pa"),c:"#0F6E56"},
+    {l:"Share of activated",v:last.pv,a:avg("pv"),c:"#854F0B"}]
+   .map(x=>{const d=x.v-x.a;
+     return '<div class="rstat" style="border-left-color:'+x.c+'"><div class="rl">'+x.l+'</div>'+
+     '<div class="rv num">'+x.v.toFixed(2)+'%</div>'+
+     '<div class="rd num" style="color:'+(d>=0?"var(--good)":"var(--bad)")+'">'+(d>=0?"+":"")+d.toFixed(2)+' pp vs period avg</div></div>';}).join("");
+})();
+
+const split=[["Jan 2026",1.69,0.71],["Feb 2026",1.66,0.85],["Mar 2026",1.28,1.45],["Apr 2026",1.42,1.05],["May 2026",1.21,1.41],["Jun 2026",1.48,0.72],["Jul 2026",1.39,1.33],["Aug 2026 MTD",1.5,1.37]];
+document.getElementById("spgsplit").innerHTML=split.map(s=>{
+ const t=s[1]+s[2];
+ return '<div class="bar-row" style="grid-template-columns:110px 1fr 92px"><div class="name">'+s[0]+'</div>'+
+ '<div class="stackbar" style="margin:0"><div style="width:'+pct(s[1],t).toFixed(1)+'%;background:#0F6E56">SPG</div>'+
+ '<div style="width:'+pct(s[2],t).toFixed(1)+'%;background:#1466C8">non-SPG</div></div>'+
+ '<div class="v num">$'+t.toFixed(2)+'M</div></div>';}).join("");
+
+/* ---------- User Rate ---------- */
+const UR = [
+ ["2026-07-01",56796,36040,63.46,5074,14.08,4892,2036,2856,336,5228,5228,96.41,112432],
+ ["2026-07-02",62647,40618,64.84,6192,15.24,5931,2388,3543,283,6214,11442,95.78,112487],
+ ["2026-07-03",67682,41104,60.73,5999,14.59,5724,2858,2866,400,6124,17566,95.42,107939],
+ ["2026-07-04",59553,36245,60.86,5698,15.72,5637,2734,2903,340,5977,23543,98.93,118090],
+ ["2026-07-05",58148,35728,61.44,5825,16.3,5627,2249,3378,364,5991,29534,96.6,108206],
+ ["2026-07-06",63067,36962,58.61,6185,16.73,6049,2625,3424,401,6450,35984,97.8,113974],
+ ["2026-07-07",59754,38239,63.99,5432,14.21,5229,2085,3144,304,5533,41517,96.26,103289],
+ ["2026-07-08",49336,30803,62.44,4035,13.1,3957,1938,2019,287,4244,45761,98.07,122873],
+ ["2026-07-09",63652,38728,60.84,5263,13.59,5086,2024,3062,294,5380,51141,96.64,117297],
+ ["2026-07-10",61373,38912,63.4,5010,12.88,4740,2286,2454,290,5030,56171,94.61,112459],
+ ["2026-07-11",60035,39574,65.92,5070,12.81,4799,2347,2452,317,5116,61287,94.65,107317],
+ ["2026-07-12",60274,35619,59.1,5943,16.68,5702,2613,3089,392,6094,67381,95.94,118586],
+ ["2026-07-13",57481,34608,60.21,4894,14.14,4802,2207,2595,320,5122,72503,98.12,120015],
+ ["2026-07-14",57866,36387,62.88,6147,16.89,6051,2641,3410,366,6417,78920,98.44,119991],
+ ["2026-07-15",65339,43018,65.84,5387,12.52,5295,2353,2942,369,5664,84584,98.29,108696],
+ ["2026-07-16",53398,32142,60.19,4497,13.99,4257,1786,2471,418,4675,89259,94.66,127661],
+ ["2026-07-17",59634,35033,58.75,4601,13.13,4356,2066,2290,383,4739,93998,94.68,111781],
+ ["2026-07-18",63284,41502,65.58,5942,14.32,5677,2162,3515,367,6044,100042,95.54,111689],
+ ["2026-07-19",60556,38432,63.47,4878,12.69,4649,2266,2383,328,4977,105019,95.31,118482],
+ ["2026-07-20",59897,39245,65.52,6656,16.96,6309,2405,3904,379,6688,111707,94.79,115893]
+];
+const URc = ["install","applied","applied_rate","approval","approval_rate","activated","basic_activated","premium_activated","starter_upgrade","activated_incl_upgrade","cumulative","activated_rate","spending"];
+const dayLbl = UR.map(r=>r[0].slice(8));
+
+/* combo: volume bars + rate lines */
+(function(){
+  const h=210, n=UR.length, pad=6;
+  const vmax=Math.max(...UR.map(r=>r[1]))*1.05;
+  const bw=(100-pad)/n;
+  const yv=v=>h-26-(v/vmax)*(h-46);
+  const yr=v=>h-26-((v-10)/65)*(h-46);           // right axis: 10%–75%
+  let bars="";
+  UR.forEach((r,i)=>{
+    const x=pad/2+i*bw;
+    bars+='<rect x="'+(x+bw*0.12).toFixed(2)+'" y="'+yv(r[1]).toFixed(1)+'" width="'+(bw*0.76).toFixed(2)+'" height="'+(h-26-yv(r[1])).toFixed(1)+'" fill="#D6E4F5"/>';
+    bars+='<rect x="'+(x+bw*0.12).toFixed(2)+'" y="'+yv(r[2]).toFixed(1)+'" width="'+(bw*0.76).toFixed(2)+'" height="'+(h-26-yv(r[2])).toFixed(1)+'" fill="#1466C8"/>';
+    bars+='<rect x="'+(x+bw*0.12).toFixed(2)+'" y="'+yv(r[4]).toFixed(1)+'" width="'+(bw*0.76).toFixed(2)+'" height="'+(h-26-yv(r[4])).toFixed(1)+'" fill="#16232E"/>';
+  });
+  const lx=i=>pad/2+i*bw+bw/2;
+  const ln=(k,col)=>'<path d="M'+UR.map((r,i)=>lx(i).toFixed(2)+","+yr(r[k]).toFixed(1)).join(" L")+'" fill="none" stroke="'+col+'" stroke-width="1.6" vector-effect="non-scaling-stroke"/>'+
+    UR.map((r,i)=>'<circle cx="'+lx(i).toFixed(2)+'" cy="'+yr(r[k]).toFixed(1)+'" r="1" fill="'+col+'"/>').join("");
+  document.getElementById("urcombo").innerHTML=
+   '<svg viewBox="0 0 100 '+h+'" preserveAspectRatio="none" style="width:100%;height:230px">'+
+   '<line x1="0" y1="'+(h-26)+'" x2="100" y2="'+(h-26)+'" stroke="#C9D2DA" stroke-width="0.6"/>'+
+   bars+ln(3,"#0F6E56")+ln(5,"#854F0B")+'</svg>'+
+   '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint)">'+dayLbl.map(d=>'<span>'+d+'</span>').join("")+'</div>'+
+   '<div class="legend"><span><i style="background:#D6E4F5"></i>Install</span><span><i style="background:#1466C8"></i>Applied</span>'+
+   '<span><i style="background:#16232E"></i>Approved</span><span><i style="background:#0F6E56"></i>Applied rate</span>'+
+   '<span><i style="background:#854F0B"></i>Approval rate</span></div>';
+
+  const col=k=>UR.map(r=>r[k]);
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const last=a=>a[a.length-1];
+  const stats=[
+   {l:"Applied rate",k:3,c:"#0F6E56",u:"%"},
+   {l:"Approval rate",k:5,c:"#854F0B",u:"%"},
+   {l:"Activated rate",k:12,c:"#1466C8",u:"%"}
+  ];
+  document.getElementById("ratestats").innerHTML=stats.map(x=>{
+   const a=col(x.k), d=last(a)-avg(a);
+   return '<div class="rstat" style="border-left-color:'+x.c+'"><div class="rl">'+x.l+'</div>'+
+    '<div class="rv num">'+last(a).toFixed(2)+'%</div>'+
+    '<div class="rd num" style="color:'+(d>=0?"var(--good)":"var(--bad)")+'">'+(d>=0?"+":"")+d.toFixed(2)+' pp vs period avg</div></div>';
+  }).join("")+
+  '<div class="rstat" style="border-left-color:#C9D2DA"><div class="rl">Starter upgrades</div>'+
+  '<div class="rv num">'+fmt(last(col(9)))+'</div><div class="rd num" style="color:var(--sub)">'+
+  pct(last(col(9)),last(col(10))).toFixed(1)+'% of activated incl. upgrade</div></div>';
+})();
+
+/* activated user mix */
+(function(){
+  document.getElementById("urmix").innerHTML=UR.map(r=>{
+   const t=r[10];
+   const b=pct(r[7],t), pm=pct(r[8],t), st=pct(r[9],t);
+   return '<div class="spendrow" style="grid-template-columns:44px 1fr 62px"><div class="sname">'+r[0].slice(5)+'</div>'+
+    '<div class="stackbar" style="margin:0;height:14px">'+
+    '<div style="width:'+pm.toFixed(1)+'%;background:#1466C8"></div>'+
+    '<div style="width:'+b.toFixed(1)+'%;background:#0F6E56"></div>'+
+    '<div style="width:'+st.toFixed(1)+'%;background:#854F0B"></div></div>'+
+    '<div class="sv num">'+fmt(t)+'</div></div>';
+  }).join("")+
+  '<div class="legend"><span><i style="background:#1466C8"></i>Premium</span><span><i style="background:#0F6E56"></i>Basic</span><span><i style="background:#854F0B"></i>Starter upgrade</span></div>';
+})();
+
+/* activation pace vs plan + cost per activated */
+(function(){
+  const n=UR.length, MONTH_TARGET=200000, DAYS=31;
+  const req=i=>MONTH_TARGET/DAYS*(i+1);
+  const h=150;
+  const cmax=Math.max(req(n-1), UR[n-1][11])*1.06;
+  const X=i=>(i/(n-1))*100;
+  const Y=v=>h-22-(v/cmax)*(h-36);
+  const act=UR.map((r,i)=>[X(i),Y(r[11])]);
+  const pln=UR.map((r,i)=>[X(i),Y(req(i))]);
+  const gap="M"+act.map(p=>p[0].toFixed(2)+","+p[1].toFixed(1)).join(" L")+
+            " L"+[...pln].reverse().map(p=>p[0].toFixed(2)+","+p[1].toFixed(1)).join(" L")+" Z";
+  const behind = UR[n-1][11] < req(n-1);
+  const gapPct = (UR[n-1][11]-req(n-1))/req(n-1)*100;
+
+  const cpa=UR.map(r=>r[13]/r[10]);
+  const cmin=Math.min(...cpa)*0.92, cmx=Math.max(...cpa)*1.06, avgC=cpa.reduce((a,b)=>a+b,0)/cpa.length;
+  const h2=96;
+  const Y2=v=>h2-18-((v-cmin)/(cmx-cmin))*(h2-30);
+
+  document.getElementById("urcum").innerHTML=
+   '<svg viewBox="0 0 100 '+h+'" preserveAspectRatio="none" style="width:100%;height:160px">'+
+   '<path d="'+gap+'" fill="'+(behind?"#FCEBEB":"#E1F5EE")+'"/>'+
+   '<path d="M'+pln.map(p=>p[0].toFixed(2)+","+p[1].toFixed(1)).join(" L")+'" fill="none" stroke="#8A97A2" stroke-width="1.1" stroke-dasharray="3 2" vector-effect="non-scaling-stroke"/>'+
+   '<path d="M'+act.map(p=>p[0].toFixed(2)+","+p[1].toFixed(1)).join(" L")+'" fill="none" stroke="#1466C8" stroke-width="1.7" vector-effect="non-scaling-stroke"/>'+
+   '</svg>'+
+   '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-bottom:2px">'+
+   dayLbl.filter((_,i)=>i%3===0).map(d=>'<span>'+d+'</span>').join("")+'</div>'+
+   '<div class="legend"><span><i style="background:#1466C8"></i>Cumulative activated <span class="num">'+fmt(UR[n-1][11])+'</span></span>'+
+   '<span><i style="background:#8A97A2"></i>Required pace <span class="num">'+fmt(req(n-1))+'</span></span>'+
+   '<span style="color:'+(behind?"var(--bad)":"var(--good)")+'" class="num">'+(gapPct>=0?"+":"")+gapPct.toFixed(1)+'% vs pace</span></div>'+
+
+   '<div style="font-size:13px;font-weight:600;margin-top:14px">Cost per activated</div>'+
+   '<div class="sub" style="margin-bottom:6px">Daily spending / activated incl. upgrade</div>'+
+   '<svg viewBox="0 0 100 '+h2+'" preserveAspectRatio="none" style="width:100%;height:100px">'+
+   '<line x1="0" y1="'+Y2(avgC).toFixed(1)+'" x2="100" y2="'+Y2(avgC).toFixed(1)+'" stroke="#C9D2DA" stroke-dasharray="3 2" stroke-width="0.7"/>'+
+   '<path d="M'+cpa.map((v,i)=>X(i).toFixed(2)+","+Y2(v).toFixed(1)).join(" L")+'" fill="none" stroke="#854F0B" stroke-width="1.6" vector-effect="non-scaling-stroke"/>'+
+   cpa.map((v,i)=>'<circle cx="'+X(i).toFixed(2)+'" cy="'+Y2(v).toFixed(1)+'" r="1" fill="#854F0B"/>').join("")+
+   '</svg>'+
+   '<div class="legend"><span><i style="background:#854F0B"></i>Cost per activated · latest <span class="num">$'+cpa[n-1].toFixed(2)+'</span></span>'+
+   '<span><i style="background:#C9D2DA"></i>Period average <span class="num">$'+avgC.toFixed(2)+'</span></span>'+
+   '<span class="num" style="color:var(--sub)">range $'+Math.min(...cpa).toFixed(2)+'–$'+Math.max(...cpa).toFixed(2)+'</span></div>';
+})();
+
+/* full table view */
+(function(){
+  const rates=[3,5,12];
+  document.getElementById("urtable").innerHTML=
+   '<thead><tr><th>Date</th>'+URc.map(c=>'<th>'+c+'</th>').join("")+'</tr></thead><tbody>'+
+   UR.map(r=>'<tr><td class="num" style="font-weight:500">'+r[0]+'</td>'+
+     r.slice(1).map((v,idx)=>{
+       const k=idx+1;
+       if(rates.includes(k)) return '<td class="num">'+v.toFixed(2)+'%</td>';
+       if(k===13) return '<td class="num">$'+fmt(v)+'</td>';
+       return '<td class="num">'+fmt(v)+'</td>';
+     }).join("")+'</tr>').join("")+'</tbody>';
+  const bc=document.getElementById("ur-chart"), bt=document.getElementById("ur-table");
+  bc.onclick=()=>{bc.className="on";bt.className="";document.getElementById("urchartview").style.display="block";document.getElementById("urtableview").style.display="none";};
+  bt.onclick=()=>{bt.className="on";bc.className="";document.getElementById("urchartview").style.display="none";document.getElementById("urtableview").style.display="block";};
+})();
+
+/* legacy 2 */
+const l2d=["Jul 8","Jul 9","Jul 10","Jul 11","Jul 12","Jul 13"];
+const l2r=[["APPLE SEARCH ADS",[11116, 10312, 12750, 12125, 11176, 7983]],["AVOW",[8652, 8499, 9138, 9252, 12844, 9918]],["C2C",[8090, 13268, 12032, 10071, 11674, 10890]],["FACEBOOK",[7310, 10312, 7472, 8669, 10482, 6660]],["GOOGLE",[11023, 8746, 8821, 7857, 8493, 11246]],["INMOBI",[2968, 2790, 4062, 4148, 3227, 3717]],["LUCENT",[7699, 11029, 7985, 13436, 11579, 11907]],["MOLOCO",[4977, 5764, 5359, 5160, 6941, 6668]],["POKKT",[4417, 3840, 4403, 2644, 4075, 2749]],["RADIANT",[8393, 9250, 12001, 9208, 8309, 9408]],["RTB",[5736, 8685, 5109, 5181, 5689, 8230]],["TIKTOK",[3046, 4275, 3826, 3945, 2986, 3683]]];
+document.getElementById("legacy2").innerHTML=
+ '<thead><tr><th>Media source</th>'+l2d.map(d=>'<th>'+d+'</th>').join("")+'</tr></thead><tbody>'+
+ l2r.map(r=>'<tr><td>'+r[0]+'</td>'+r[1].map(v=>'<td class="num">$'+fmt(v)+'</td>').join("")+'</tr>').join("")+'</tbody>';
+
+/* spending by paid channel — chart view */
+(function(){
+  const rowsSp=l2r.map(r=>({c:r[0], now:r[1][5], then:r[1][0]})).sort((a,b)=>b.now-a.now);
+  const tot=rowsSp.reduce((a,b)=>a+b.now,0);
+  const mx=Math.max(...rowsSp.map(r=>r.now));
+  document.getElementById("spendchart").innerHTML=
+   rowsSp.map(r=>{
+     const d=pct(r.now-r.then,r.then);
+     return '<div class="spendrow"><div class="sname">'+r.c+'</div>'+
+      '<div class="strack"><div class="sbar" style="width:'+(r.now/mx*100).toFixed(1)+'%"></div></div>'+
+      '<div class="sv num">$'+fmt(r.now)+'</div>'+
+      '<div class="sd num" style="color:'+(Math.abs(d)<2?"var(--faint)":d>0?"var(--good)":"var(--bad)")+'">'+(d>=0?"+":"")+d.toFixed(0)+'%</div></div>';
+   }).join("")+
+   '<div class="spendrow" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px;font-weight:600">'+
+   '<div class="sname">Total paid</div><div class="strack" style="background:transparent"></div>'+
+   '<div class="sv num">$'+fmt(tot)+'</div><div class="sd"></div></div>'+
+   '<div class="stackbar" style="margin-top:12px">'+
+   rowsSp.slice(0,6).map((r,i)=>'<div style="width:'+pct(r.now,tot).toFixed(1)+'%;background:'+["#1466C8","#0F6E56","#854F0B","#5B6B78","#4A8FE0","#2E9C7E"][i]+'">'+pct(r.now,tot).toFixed(0)+'%</div>').join("")+
+   '<div style="width:'+pct(rowsSp.slice(6).reduce((a,b)=>a+b.now,0),tot).toFixed(1)+'%;background:#C9D2DA;color:#16232E">rest</div></div>'+
+   '<div class="legend">'+rowsSp.slice(0,6).map((r,i)=>'<span><i style="background:'+["#1466C8","#0F6E56","#854F0B","#5B6B78","#4A8FE0","#2E9C7E"][i]+'"></i>'+r.c+'</span>').join("")+'</div>';
+  const bc=document.getElementById("sp-chart"), bt=document.getElementById("sp-table");
+  bc.onclick=()=>{bc.className="on";bt.className="";document.getElementById("spendchart").style.display="block";document.getElementById("spendtable").style.display="none";};
+  bt.onclick=()=>{bt.className="on";bc.className="";document.getElementById("spendchart").style.display="none";document.getElementById("spendtable").style.display="block";};
+})();
+</script>
+</body>
+</html>
